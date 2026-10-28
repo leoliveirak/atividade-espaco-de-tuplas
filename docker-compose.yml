@@ -48,13 +48,13 @@ services:
   # ── Monitor ─────────────────────────────────────────────────────────────────
   # Nível 2B: descomente este bloco após completar Monitor.java
   #
-  # monitor:
-  #   build: ./monitor
-  #   hostname: monitor
-  #   depends_on:
-  #     - javaspaces
-  #   networks:
-  #     - rede-tuplas
+  monitor:
+    build: ./monitor
+    hostname: monitor
+    depends_on:
+      - javaspaces
+    networks:
+      - rede-tuplas
 
 networks:
   rede-tuplas:

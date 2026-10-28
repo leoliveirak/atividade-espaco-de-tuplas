@@ -36,30 +36,24 @@ public class Monitor {
         TaskEntry template = new TaskEntry(null, null, null);
         int count = 0;
 
-        // TODO: use read() ou take() aqui — qual você deve usar e por quê?
-        //
-        // Dica: o espaço de tuplas não tem operação count().
-        // Você precisa ler as entradas uma a uma para contá-las.
-        // Pense: se você usar take(), o que acontece com as tarefas?
-        //
-        // Substitua o null abaixo pela chamada correta:
-        //
-        //   TaskEntry encontrada = (TaskEntry) space.???(template, null, 0);
-        //
-        // Use timeout = 0 (JavaSpace.NO_WAIT) para não bloquear quando não houver mais entradas.
-        //
-        // Atenção: read() com timeout=0 pode retornar a mesma entrada mais de uma vez —
-        // o Outrigger não garante ordem nem variedade entre chamadas sucessivas.
-        // Para contar corretamente, você precisaria de um campo id único por tarefa
-        // e rastrear quais ids já foram vistos. Esse problema não tem solução limpa
-        // com a API pura do espaço de tuplas — é justamente a limitação que o Nível 2B explora.
+        // a operação read() com timeout=0 pode retornar a mesma entrada mais de uma vez,
+        // então precisamos rastrear quais ids já foram vistos para contar corretamente.
+        java.util.Set<Integer> idsVistos = new java.util.HashSet<>();
+        int tentativas = 0; 
 
-        TaskEntry encontrada = null; // ← substitua esta linha
+        TaskEntry encontrada = null;
 
-        if (encontrada != null) {
-            count = 1; // ← implemente a contagem real acima e remova esta linha
+        // loop de read() para contar entradas únicas
+        while ((encontrada = (TaskEntry) space.read(template, null, 0)) != null && tentativas < 20) {
+            if (!idsVistos.contains(encontrada.id) && encontrada.id != null) {
+                idsVistos.add(encontrada.id);
+                count++; // incrementa a contagem apenas se o id for único
+                tentativas = 0; // resetar tentativas se encontrar uma nova entrada
+            } else {
+                tentativas++; // incrementa tentativas se não encontrar uma nova entrada
+            }
+            
         }
-
         return count;
     }
 
